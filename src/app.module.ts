@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
-import { envSchema } from './config/env/env.schema';
+import { envSchema } from './config/utils/env.schema';
 import { CustomZodValidationPipe } from './config/pipes/zod.pipe';
+import { BetterAuthModule } from './better-auth/better-auth.module';
+import { HealthModule } from './health/health.module';
+import { ResponseTransformInterceptor } from './config/interceptors/response.interceptor';
 
 @Module({
   imports: [
@@ -12,13 +16,27 @@ import { CustomZodValidationPipe } from './config/pipes/zod.pipe';
       expandVariables: true,
       validate: (config) => envSchema.parse(config),
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60_000,
+          limit: 60,
+        },
+      ],
+    }),
     DatabaseModule,
+    BetterAuthModule,
+    HealthModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_PIPE,
       useClass: CustomZodValidationPipe,
+    },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTransformInterceptor,
     },
   ],
 })
