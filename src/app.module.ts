@@ -8,6 +8,7 @@ import { CustomZodValidationPipe } from './config/pipes/zod.pipe';
 import { BetterAuthModule } from './better-auth/better-auth.module';
 import { HealthModule } from './health/health.module';
 import { ResponseTransformInterceptor } from './config/interceptors/response.interceptor';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ResponseTransformInterceptor } from './config/interceptors/response.int
     DatabaseModule,
     BetterAuthModule,
     HealthModule,
+    EmailModule,
   ],
   providers: [
     {
